@@ -384,6 +384,12 @@ function setStatus(msg, type = '') {
 
 /* ---------- Theme (dark mode) ---------- */
 
+// Tolerates markup that predates a feature, so a cached older index.html can
+// never halt start-up and leave the board unbuilt.
+function onClick(el, handler) {
+  if (el) el.addEventListener('click', handler);
+}
+
 // The initial theme is applied by an inline script in index.html to avoid a
 // flash of the wrong theme; this keeps the button and meta tag in sync.
 function applyTheme(dark) {
@@ -393,11 +399,13 @@ function applyTheme(dark) {
     document.documentElement.removeAttribute('data-theme');
   }
 
-  themeBtn.textContent = dark ? '☀️' : '🌙';
-  themeBtn.setAttribute('aria-pressed', String(dark));
-  const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
-  themeBtn.setAttribute('aria-label', label);
-  themeBtn.title = label;
+  if (themeBtn) {
+    themeBtn.textContent = dark ? '☀️' : '🌙';
+    themeBtn.setAttribute('aria-pressed', String(dark));
+    const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    themeBtn.setAttribute('aria-label', label);
+    themeBtn.title = label;
+  }
 
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', dark ? '#15171c' : '#8a5cf6');
@@ -661,17 +669,23 @@ function newPuzzle() {
   setStatus('Generating puzzle...');
   // Let the status message paint before the (synchronous) generation work runs.
   setTimeout(() => {
-    const difficulty = difficultyEl.value;
-    currentSeed = createRandomSeed();
-    const random = createSeededRandom(currentSeed);
-    const { puzzle, solution } = generatePuzzle(difficulty, random);
-    currentPuzzle = puzzle;
-    currentSolution = solution;
-    userValues = new Array(81).fill(0);
-    renderPuzzle();
-    updateHashAndUrl();
-    saveActiveGame();
-    setStatus('');
+    try {
+      const difficulty = difficultyEl.value;
+      currentSeed = createRandomSeed();
+      const random = createSeededRandom(currentSeed);
+      const { puzzle, solution } = generatePuzzle(difficulty, random);
+      currentPuzzle = puzzle;
+      currentSolution = solution;
+      userValues = new Array(81).fill(0);
+      renderPuzzle();
+      updateHashAndUrl();
+      saveActiveGame();
+      setStatus('');
+    } catch (err) {
+      // Never leave the user staring at "Generating puzzle..." forever.
+      console.error('Puzzle generation failed:', err);
+      setStatus('Could not generate a puzzle. Please reload the page.', 'error');
+    }
   }, 20);
 }
 
@@ -904,7 +918,7 @@ checkBtn.addEventListener('click', checkSolution);
 solutionBtn.addEventListener('click', toggleSolution);
 saveBtn.addEventListener('click', saveCurrentPuzzle);
 shareBtn.addEventListener('click', shareCurrentPuzzle);
-themeBtn.addEventListener('click', toggleTheme);
+onClick(themeBtn, toggleTheme);
 loadBtn.addEventListener('click', () => loadFromCode(hashInput.value));
 copyBtn.addEventListener('click', async () => {
   try {
