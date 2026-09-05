@@ -18,6 +18,7 @@
         <option value="hard">Hard</option>
       </select>
       <button id="newPuzzleBtn">New Puzzle</button>
+      <button id="checkBtn">Check Solution</button>
       <button id="solutionBtn">Show Solution</button>
     </div>
 
@@ -33,9 +34,16 @@
       <div class="hash-row">
         <input type="text" id="hashInput" maxlength="9" spellcheck="false" autocomplete="off" placeholder="9-character code">
         <button id="copyBtn">Copy</button>
+        <button id="shareBtn">Share</button>
+        <button id="saveBtn">Save</button>
         <button id="loadBtn">Load</button>
       </div>
       <p class="hint">This 9-character code stores the generator version, difficulty, and seed. Copy it to restore the same puzzle later, or share the generated URL.</p>
+    </div>
+
+    <div id="savedSection" class="saved-section">
+      <h3>Saved Puzzles</h3>
+      <div id="savedList" class="saved-list"></div>
     </div>
   </div>
 

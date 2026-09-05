@@ -75,6 +75,18 @@ button:active {
   font-size: 0.95rem;
   color: #555;
   text-align: center;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
+.status.success {
+  color: #1a8f4c;
+  font-weight: 600;
+}
+
+.status.error {
+  color: #d32f2f;
+  font-weight: 600;
 }
 
 .board {
@@ -158,18 +170,20 @@ button:active {
 
 .palette {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: clamp(3px, 1.2vw, 6px);
   justify-content: center;
+  max-width: 100%;
 }
 
 .swatch {
-  width: 36px;
-  height: 36px;
+  width: clamp(24px, 7vw, 32px);
+  height: clamp(24px, 7vw, 32px);
   border-radius: 50%;
   border: 2px solid rgba(0, 0, 0, 0.25);
   cursor: pointer;
   padding: 0;
+  flex-shrink: 1;
   transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
 }
 
@@ -178,13 +192,13 @@ button:active {
 }
 
 .swatch.selected {
-  box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--accent);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent);
 }
 
 .swatch.eraser {
   background: #fff;
   color: #999;
-  font-size: 1rem;
+  font-size: 0.85rem;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -200,17 +214,109 @@ button:active {
 
 .hash-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 #hashInput {
-  flex: 1;
+  flex: 2 1 140px;
   min-width: 0;
   font-family: monospace;
+}
+
+.hash-row button {
+  flex: 1 1 auto;
 }
 
 .hint {
   font-size: 0.8rem;
   color: #777;
   margin: 0;
+}
+
+.saved-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.saved-section h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #2b2b2b;
+}
+
+.saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.saved-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--cell-bg);
+  border: 1px solid var(--thin-border);
+  border-radius: 6px;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.saved-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.saved-code {
+  font-family: monospace;
+  font-weight: 600;
+  color: #2b2b2b;
+}
+
+.saved-date {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.saved-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.saved-actions button {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+
+.btn-delete {
+  background: #e63b27;
+}
+
+.btn-delete:hover {
+  background: #c92f1d;
+}
+
+.badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.badge-easy { background: #d4edda; color: #155724; }
+.badge-medium { background: #fff3cd; color: #856404; }
+.badge-hard { background: #f8d7da; color: #721c24; }
+
+.saved-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #888;
+  font-style: italic;
 }

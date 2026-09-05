@@ -353,11 +353,18 @@ const boardEl = document.getElementById('board');
 const paletteEl = document.getElementById('palette');
 const difficultyEl = document.getElementById('difficulty');
 const newPuzzleBtn = document.getElementById('newPuzzleBtn');
+const checkBtn = document.getElementById('checkBtn');
 const solutionBtn = document.getElementById('solutionBtn');
 const hashInput = document.getElementById('hashInput');
 const copyBtn = document.getElementById('copyBtn');
+const shareBtn = document.getElementById('shareBtn');
+const saveBtn = document.getElementById('saveBtn');
 const loadBtn = document.getElementById('loadBtn');
+const savedList = document.getElementById('savedList');
 const statusEl = document.getElementById('status');
+
+const SAVED_STORAGE_KEY = 'sudoku_saved_puzzles';
+const ACTIVE_GAME_KEY = 'sudoku_active_game';
 
 let currentPuzzle = new Array(81).fill(0);
 let currentSolution = new Array(81).fill(0);
@@ -368,8 +375,9 @@ let pegSpans = [];
 let solutionShown = false;
 let selectedTool = 1; // 1-9 = color to place, 0 = eraser
 
-function setStatus(msg) {
+function setStatus(msg, type = '') {
   statusEl.textContent = msg || '';
+  statusEl.className = 'status' + (type ? ` ${type}` : '');
 }
 
 function setPeg(idx, colorValue) {
@@ -475,6 +483,7 @@ function applyToolToCell(idx) {
   if (currentPuzzle[idx] !== 0 || solutionShown) return; // clues & solution view are locked
   userValues[idx] = selectedTool;
   setPeg(idx, selectedTool);
+  saveActiveGame();
 }
 
 function onCellClick(e) {
@@ -499,6 +508,7 @@ function onCellKeyDown(e) {
     if (currentPuzzle[idx] === 0 && !solutionShown) {
       userValues[idx] = Number(e.key);
       setPeg(idx, Number(e.key));
+      saveActiveGame();
     }
     return;
   } else if (e.key === '0' || e.key === 'Backspace' || e.key === 'Delete') {
@@ -506,6 +516,7 @@ function onCellKeyDown(e) {
     if (currentPuzzle[idx] === 0 && !solutionShown) {
       userValues[idx] = 0;
       setPeg(idx, 0);
+      saveActiveGame();
     }
     return;
   }
@@ -523,6 +534,21 @@ function updateHashAndUrl() {
   window.history.replaceState(null, '', url.toString());
 }
 
+function saveActiveGame() {
+  try {
+    const code = hashInput.value;
+    if (!code) return;
+    const data = {
+      code,
+      difficulty: difficultyEl.value,
+      userValues
+    };
+    localStorage.setItem(ACTIVE_GAME_KEY, JSON.stringify(data));
+  } catch (e) {
+    // Ignore storage errors
+  }
+}
+
 function newPuzzle() {
   setStatus('Generating puzzle...');
   // Let the status message paint before the (synchronous) generation work runs.
@@ -536,6 +562,7 @@ function newPuzzle() {
     userValues = new Array(81).fill(0);
     renderPuzzle();
     updateHashAndUrl();
+    saveActiveGame();
     setStatus('');
   }, 20);
 }
@@ -560,10 +587,176 @@ function toggleSolution() {
   }
 }
 
-function loadFromCode(code) {
+function checkSolution() {
+  if (solutionShown) {
+    setStatus('Hide the solution before checking.', 'error');
+    return;
+  }
+
+  let emptyCount = 0;
+  let hasErrors = false;
+
+  for (let i = 0; i < 81; i++) {
+    if (currentPuzzle[i] !== 0) continue;
+    if (userValues[i] === 0) {
+      emptyCount++;
+    } else if (userValues[i] !== currentSolution[i]) {
+      hasErrors = true;
+    }
+  }
+
+  if (emptyCount > 0) {
+    setStatus(
+      `Puzzle is incomplete (${emptyCount} empty ${emptyCount === 1 ? 'cell' : 'cells'} remaining).`,
+      'error'
+    );
+  } else if (hasErrors) {
+    setStatus('The solution is incorrect. Keep trying!', 'error');
+  } else {
+    setStatus('Congratulations! The solution is correct! 🎉\nYou are amazing, smart, loved and a sudoku master!', 'success');
+  }
+}
+
+function getSavedPuzzles() {
+  try {
+    const raw = localStorage.getItem(SAVED_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function renderSavedPuzzles() {
+  const saved = getSavedPuzzles();
+  savedList.innerHTML = '';
+  if (saved.length === 0) {
+    savedList.innerHTML = '<p class="saved-empty">No saved puzzles yet. Click "Save" above to bookmark puzzles.</p>';
+    return;
+  }
+
+  saved.forEach((item) => {
+    const el = document.createElement('div');
+    el.className = 'saved-item';
+
+    const info = document.createElement('div');
+    info.className = 'saved-info';
+
+    const badge = document.createElement('span');
+    badge.className = `badge badge-${item.difficulty || 'medium'}`;
+    badge.textContent = item.difficulty || 'medium';
+
+    const codeSpan = document.createElement('span');
+    codeSpan.className = 'saved-code';
+    codeSpan.textContent = item.code;
+
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'saved-date';
+    dateSpan.textContent = item.date || '';
+
+    info.appendChild(badge);
+    info.appendChild(codeSpan);
+    if (item.date) info.appendChild(dateSpan);
+
+    const actions = document.createElement('div');
+    actions.className = 'saved-actions';
+
+    const playBtn = document.createElement('button');
+    playBtn.type = 'button';
+    playBtn.textContent = 'Load';
+    playBtn.addEventListener('click', () => {
+      hashInput.value = item.code;
+      loadFromCode(item.code);
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'btn-delete';
+    delBtn.textContent = '✕';
+    delBtn.title = 'Delete saved puzzle';
+    delBtn.setAttribute('aria-label', `Delete saved puzzle ${item.code}`);
+    delBtn.addEventListener('click', () => deleteSavedPuzzle(item.code));
+
+    actions.appendChild(playBtn);
+    actions.appendChild(delBtn);
+
+    el.appendChild(info);
+    el.appendChild(actions);
+    savedList.appendChild(el);
+  });
+}
+
+function saveCurrentPuzzle() {
+  const code = hashInput.value;
+  if (!decodePuzzleCode(code)) {
+    setStatus('Cannot save invalid puzzle code.', 'error');
+    return;
+  }
+  const saved = getSavedPuzzles();
+  if (saved.some((item) => item.code === code)) {
+    setStatus('Puzzle is already in your saved list! ⭐');
+    return;
+  }
+  const dateStr = new Date().toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric'
+  });
+  saved.unshift({
+    code,
+    difficulty: difficultyEl.value,
+    date: dateStr
+  });
+  try {
+    localStorage.setItem(SAVED_STORAGE_KEY, JSON.stringify(saved));
+    renderSavedPuzzles();
+    setStatus('Puzzle saved to your list! ⭐', 'success');
+  } catch (e) {
+    setStatus('Could not save puzzle (storage full or disabled).', 'error');
+  }
+}
+
+function deleteSavedPuzzle(code) {
+  let saved = getSavedPuzzles();
+  saved = saved.filter((item) => item.code !== code);
+  try {
+    localStorage.setItem(SAVED_STORAGE_KEY, JSON.stringify(saved));
+  } catch (e) {}
+  renderSavedPuzzles();
+  setStatus('Puzzle removed from saved list.');
+}
+
+async function shareCurrentPuzzle() {
+  const code = hashInput.value;
+  const url = window.location.href;
+  const shareData = {
+    title: 'Colour Sudoku',
+    text: `Try solving this Sudoku puzzle (${code})!`,
+    url: url
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+      setStatus('Puzzle shared!');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    setStatus('Puzzle link copied to clipboard!');
+  } catch (e) {
+    hashInput.select();
+    document.execCommand('copy');
+    setStatus('Puzzle code copied to clipboard.');
+  }
+}
+
+function loadFromCode(code, savedUserValues = null) {
   const decoded = decodePuzzleCode(code);
   if (!decoded) {
-    setStatus('Invalid puzzle code. Enter exactly 9 characters.');
+    setStatus('Invalid puzzle code. Enter exactly 9 characters.', 'error');
     return;
   }
 
@@ -573,14 +766,20 @@ function loadFromCode(code) {
   const { puzzle, solution } = generatePuzzle(decoded.difficulty, random);
   currentPuzzle = puzzle;
   currentSolution = solution;
-  userValues = new Array(81).fill(0);
+  userValues = Array.isArray(savedUserValues) && savedUserValues.length === 81
+    ? savedUserValues.slice()
+    : new Array(81).fill(0);
   renderPuzzle();
   updateHashAndUrl();
+  saveActiveGame();
   setStatus('Puzzle loaded.');
 }
 
 newPuzzleBtn.addEventListener('click', newPuzzle);
+checkBtn.addEventListener('click', checkSolution);
 solutionBtn.addEventListener('click', toggleSolution);
+saveBtn.addEventListener('click', saveCurrentPuzzle);
+shareBtn.addEventListener('click', shareCurrentPuzzle);
 loadBtn.addEventListener('click', () => loadFromCode(hashInput.value));
 copyBtn.addEventListener('click', async () => {
   try {
@@ -595,12 +794,26 @@ copyBtn.addEventListener('click', async () => {
 
 buildBoard();
 buildPalette();
+renderSavedPuzzles();
 
-// On load, check for a puzzle code in the URL (?p=...); otherwise generate a fresh puzzle.
+// On load, check for a puzzle code in the URL (?p=...); otherwise restore active game or generate a fresh puzzle.
 const urlParams = new URLSearchParams(window.location.search);
 const initialCode = urlParams.get('p');
 if (initialCode) {
   loadFromCode(initialCode);
 } else {
-  newPuzzle();
+  let restored = false;
+  try {
+    const raw = localStorage.getItem(ACTIVE_GAME_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data && data.code && decodePuzzleCode(data.code)) {
+        loadFromCode(data.code, data.userValues);
+        restored = true;
+      }
+    }
+  } catch (e) {}
+  if (!restored) {
+    newPuzzle();
+  }
 }
