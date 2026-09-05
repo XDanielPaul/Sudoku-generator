@@ -362,9 +362,11 @@ const saveBtn = document.getElementById('saveBtn');
 const loadBtn = document.getElementById('loadBtn');
 const savedList = document.getElementById('savedList');
 const statusEl = document.getElementById('status');
+const themeBtn = document.getElementById('themeBtn');
 
 const SAVED_STORAGE_KEY = 'sudoku_saved_puzzles';
 const ACTIVE_GAME_KEY = 'sudoku_active_game';
+const THEME_KEY = 'sudoku_theme';
 
 let currentPuzzle = new Array(81).fill(0);
 let currentSolution = new Array(81).fill(0);
@@ -378,6 +380,60 @@ let selectedTool = 1; // 1-9 = color to place, 0 = eraser
 function setStatus(msg, type = '') {
   statusEl.textContent = msg || '';
   statusEl.className = 'status' + (type ? ` ${type}` : '');
+}
+
+/* ---------- Theme (dark mode) ---------- */
+
+// The initial theme is applied by an inline script in index.html to avoid a
+// flash of the wrong theme; this keeps the button and meta tag in sync.
+function applyTheme(dark) {
+  if (dark) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+
+  themeBtn.textContent = dark ? '☀️' : '🌙';
+  themeBtn.setAttribute('aria-pressed', String(dark));
+  const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  themeBtn.setAttribute('aria-label', label);
+  themeBtn.title = label;
+
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', dark ? '#15171c' : '#8a5cf6');
+}
+
+function isDarkMode() {
+  return document.documentElement.getAttribute('data-theme') === 'dark';
+}
+
+function toggleTheme() {
+  const dark = !isDarkMode();
+  applyTheme(dark);
+  try {
+    localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+  } catch (e) {
+    // Ignore storage errors
+  }
+}
+
+function initTheme() {
+  applyTheme(isDarkMode());
+
+  // Follow the OS setting until the user picks a theme explicitly.
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  const onSystemChange = (e) => {
+    let stored = null;
+    try {
+      stored = localStorage.getItem(THEME_KEY);
+    } catch (err) {}
+    if (!stored) applyTheme(e.matches);
+  };
+  if (media.addEventListener) {
+    media.addEventListener('change', onSystemChange);
+  } else if (media.addListener) {
+    media.addListener(onSystemChange);
+  }
 }
 
 function setPeg(idx, colorValue) {
@@ -848,6 +904,7 @@ checkBtn.addEventListener('click', checkSolution);
 solutionBtn.addEventListener('click', toggleSolution);
 saveBtn.addEventListener('click', saveCurrentPuzzle);
 shareBtn.addEventListener('click', shareCurrentPuzzle);
+themeBtn.addEventListener('click', toggleTheme);
 loadBtn.addEventListener('click', () => loadFromCode(hashInput.value));
 copyBtn.addEventListener('click', async () => {
   try {
@@ -863,6 +920,7 @@ copyBtn.addEventListener('click', async () => {
 buildBoard();
 buildPalette();
 renderSavedPuzzles();
+initTheme();
 
 // On load, check for a puzzle code in the URL (?p=...); otherwise restore active game or generate a fresh puzzle.
 const urlParams = new URLSearchParams(window.location.search);

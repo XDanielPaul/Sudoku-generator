@@ -1,4 +1,4 @@
-const CACHE_NAME = 'colour-sudoku-v1';
+const CACHE_NAME = 'colour-sudoku-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

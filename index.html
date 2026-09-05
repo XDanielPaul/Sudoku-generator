@@ -14,10 +14,24 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
+<script>
+  // Applied before first paint so the correct theme renders without a flash.
+  (function () {
+    try {
+      var stored = localStorage.getItem('sudoku_theme');
+      var dark = stored ? stored === 'dark'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
   <div class="app">
-    <h1>Sudoku Generator</h1>
+    <header class="app-header">
+      <h1>Sudoku Generator</h1>
+      <button id="themeBtn" class="icon-btn" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">🌙</button>
+    </header>
 
     <div class="controls">
       <label for="difficulty">Difficulty:</label>

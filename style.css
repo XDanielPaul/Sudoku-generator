@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --border-color: #2b2b2b;
   --thin-border: #b8b8b8;
   --bg: #f5f3ee;
@@ -6,6 +7,47 @@
   --clue-color: #1a1a1a;
   --user-color: #2662d9;
   --accent: #8a5cf6;
+  --accent-hover: #7442e6;
+  --text-color: #2b2b2b;
+  --text-muted: #777;
+  --input-bg: #fff;
+  --input-border: #ccc;
+  --peg-empty-border: #c9c4ba;
+  --peg-filled-border: rgba(0, 0, 0, 0.25);
+  --success: #1a8f4c;
+  --error: #d32f2f;
+  --badge-easy-bg: #d4edda;
+  --badge-easy-fg: #155724;
+  --badge-medium-bg: #fff3cd;
+  --badge-medium-fg: #856404;
+  --badge-hard-bg: #f8d7da;
+  --badge-hard-fg: #721c24;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --border-color: #e8e6e1;
+  --thin-border: #3a3f4b;
+  --bg: #15171c;
+  --cell-bg: #1e2129;
+  --clue-color: #f0eee9;
+  --user-color: #7aa2f7;
+  --accent: #9b7bf0;
+  --accent-hover: #ab90f5;
+  --text-color: #e8e6e1;
+  --text-muted: #9aa0ab;
+  --input-bg: #262a33;
+  --input-border: #3a3f4b;
+  --peg-empty-border: #454b58;
+  --peg-filled-border: rgba(0, 0, 0, 0.5);
+  --success: #4ade80;
+  --error: #f87171;
+  --badge-easy-bg: #1c3b26;
+  --badge-easy-fg: #7ee2a0;
+  --badge-medium-bg: #3d3417;
+  --badge-medium-fg: #f0d075;
+  --badge-hard-bg: #3f1f22;
+  --badge-hard-fg: #f79b9b;
 }
 
 * {
@@ -16,10 +58,12 @@ body {
   margin: 0;
   min-height: 100vh;
   background: var(--bg);
+  color: var(--text-color);
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   justify-content: center;
   padding: 24px 12px 48px;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .app {
@@ -31,11 +75,41 @@ body {
   gap: 16px;
 }
 
+.app-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  position: relative;
+}
+
 h1 {
   margin: 0;
   font-size: 1.8rem;
-  color: #2b2b2b;
+  color: var(--text-color);
   text-align: center;
+}
+
+.icon-btn {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.icon-btn:hover {
+  background: var(--input-bg);
+  transform: scale(1.08);
 }
 
 .controls {
@@ -50,8 +124,9 @@ select, button, input[type="text"] {
   font-size: 1rem;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-color);
 }
 
 button {
@@ -63,7 +138,7 @@ button {
 }
 
 button:hover {
-  background: #7442e6;
+  background: var(--accent-hover);
 }
 
 button:active {
@@ -73,19 +148,19 @@ button:active {
 .status {
   min-height: 1.2em;
   font-size: 0.95rem;
-  color: #555;
+  color: var(--text-muted);
   text-align: center;
   white-space: pre-line;
   line-height: 1.4;
 }
 
 .status.success {
-  color: #1a8f4c;
+  color: var(--success);
   font-weight: 600;
 }
 
 .status.error {
-  color: #d32f2f;
+  color: var(--error);
   font-weight: 600;
 }
 
@@ -135,23 +210,23 @@ button:active {
   height: 78%;
   border-radius: 50%;
   box-sizing: border-box;
-  border: 2px dashed #c9c4ba;
+  border: 2px dashed var(--peg-empty-border);
   background-color: transparent;
   transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
 }
 
 .peg.filled {
   border-style: solid;
-  border-color: rgba(0, 0, 0, 0.25);
+  border-color: var(--peg-filled-border);
 }
 
 .cell.clue .peg.filled {
   border-width: 3px;
-  border-color: #2b2b2b;
+  border-color: var(--border-color);
 }
 
 .cell.solution-shown .peg.filled {
-  box-shadow: 0 0 0 3px #1a8f4c;
+  box-shadow: 0 0 0 3px var(--success);
 }
 
 /* Bold borders around the 3x3 boxes */
@@ -182,7 +257,7 @@ button:active {
   width: clamp(24px, 7vw, 32px);
   height: clamp(24px, 7vw, 32px);
   border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.25);
+  border: 2px solid var(--peg-filled-border);
   cursor: pointer;
   padding: 0;
   flex-shrink: 1;
@@ -194,7 +269,7 @@ button:active {
 }
 
 .swatch.selected {
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 }
 
 .swatch-count {
@@ -205,25 +280,27 @@ button:active {
   height: 14px;
   padding: 0 2px;
   border-radius: 7px;
-  background: #2b2b2b;
-  color: #fff;
+  background: var(--border-color);
+  color: var(--bg);
   font-size: 9px;
   font-weight: 700;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid #fff;
+  border: 1.5px solid var(--bg);
   pointer-events: none;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .swatch.completed .swatch-count {
-  background: #1a8f4c;
+  background: var(--success);
+  color: #fff;
 }
 
 .swatch.overfilled .swatch-count {
-  background: #d32f2f;
+  background: var(--error);
+  color: #fff;
 }
 
 .swatch.completed {
@@ -236,8 +313,8 @@ button:active {
 }
 
 .swatch.eraser {
-  background: #fff;
-  color: #999;
+  background: var(--input-bg);
+  color: var(--text-muted);
   font-size: 0.85rem;
   line-height: 1;
   display: flex;
@@ -270,7 +347,7 @@ button:active {
 
 .hint {
   font-size: 0.8rem;
-  color: #777;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -285,7 +362,7 @@ button:active {
 .saved-section h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #2b2b2b;
+  color: var(--text-color);
 }
 
 .saved-list {
@@ -316,12 +393,12 @@ button:active {
 .saved-code {
   font-family: monospace;
   font-weight: 600;
-  color: #2b2b2b;
+  color: var(--text-color);
 }
 
 .saved-date {
   font-size: 0.8rem;
-  color: #888;
+  color: var(--text-muted);
 }
 
 .saved-actions {
@@ -350,13 +427,13 @@ button:active {
   font-weight: 600;
 }
 
-.badge-easy { background: #d4edda; color: #155724; }
-.badge-medium { background: #fff3cd; color: #856404; }
-.badge-hard { background: #f8d7da; color: #721c24; }
+.badge-easy { background: var(--badge-easy-bg); color: var(--badge-easy-fg); }
+.badge-medium { background: var(--badge-medium-bg); color: var(--badge-medium-fg); }
+.badge-hard { background: var(--badge-hard-bg); color: var(--badge-hard-fg); }
 
 .saved-empty {
   margin: 0;
   font-size: 0.85rem;
-  color: #888;
+  color: var(--text-muted);
   font-style: italic;
 }
