@@ -171,12 +171,14 @@ button:active {
 .palette {
   display: flex;
   flex-wrap: nowrap;
-  gap: clamp(3px, 1.2vw, 6px);
+  gap: clamp(4px, 1.4vw, 8px);
   justify-content: center;
   max-width: 100%;
+  padding: 6px 4px 4px;
 }
 
 .swatch {
+  position: relative;
   width: clamp(24px, 7vw, 32px);
   height: clamp(24px, 7vw, 32px);
   border-radius: 50%;
@@ -184,7 +186,7 @@ button:active {
   cursor: pointer;
   padding: 0;
   flex-shrink: 1;
-  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out, opacity 0.15s ease-in-out;
 }
 
 .swatch:hover {
@@ -193,6 +195,44 @@ button:active {
 
 .swatch.selected {
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent);
+}
+
+.swatch-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 2px;
+  border-radius: 7px;
+  background: #2b2b2b;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #fff;
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.swatch.completed .swatch-count {
+  background: #1a8f4c;
+}
+
+.swatch.overfilled .swatch-count {
+  background: #d32f2f;
+}
+
+.swatch.completed {
+  opacity: 0.6;
+}
+
+.swatch.completed:hover,
+.swatch.completed.selected {
+  opacity: 1;
 }
 
 .swatch.eraser {

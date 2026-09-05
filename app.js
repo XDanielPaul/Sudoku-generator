@@ -432,6 +432,12 @@ function buildPalette() {
     swatch.title = COLORS[c].name;
     swatch.setAttribute('aria-label', COLORS[c].name);
     swatch.dataset.color = String(c);
+
+    const badge = document.createElement('span');
+    badge.className = 'swatch-count';
+    badge.textContent = '9';
+    swatch.appendChild(badge);
+
     swatch.addEventListener('click', () => selectTool(c));
     paletteEl.appendChild(swatch);
   }
@@ -446,6 +452,48 @@ function buildPalette() {
   paletteEl.appendChild(eraser);
 
   updatePaletteSelection();
+  updateColorCounts();
+}
+
+function updateColorCounts() {
+  const counts = new Array(10).fill(0);
+
+  if (solutionShown) {
+    for (let i = 0; i < 81; i++) {
+      const val = currentSolution[i];
+      if (val > 0 && val <= 9) counts[val]++;
+    }
+  } else {
+    for (let i = 0; i < 81; i++) {
+      const val = currentPuzzle[i] !== 0 ? currentPuzzle[i] : userValues[i];
+      if (val > 0 && val <= 9) counts[val]++;
+    }
+  }
+
+  for (let c = 1; c <= 9; c++) {
+    const swatch = paletteEl.querySelector(`.swatch[data-color="${c}"]`);
+    if (!swatch) continue;
+    const badge = swatch.querySelector('.swatch-count');
+    if (!badge) continue;
+
+    const remaining = 9 - counts[c];
+    if (remaining === 0) {
+      badge.textContent = '✓';
+      badge.title = `${COLORS[c].name}: all 9 placed`;
+      swatch.classList.add('completed');
+      swatch.classList.remove('overfilled');
+    } else if (remaining < 0) {
+      badge.textContent = `+${Math.abs(remaining)}`;
+      badge.title = `${COLORS[c].name}: ${counts[c]}/9 placed (too many)`;
+      swatch.classList.remove('completed');
+      swatch.classList.add('overfilled');
+    } else {
+      badge.textContent = String(remaining);
+      badge.title = `${COLORS[c].name}: ${remaining} remaining`;
+      swatch.classList.remove('completed');
+      swatch.classList.remove('overfilled');
+    }
+  }
 }
 
 function selectTool(colorValue) {
@@ -477,6 +525,7 @@ function renderPuzzle() {
       setPeg(i, userValues[i]);
     }
   }
+  updateColorCounts();
 }
 
 function applyToolToCell(idx) {
@@ -484,6 +533,7 @@ function applyToolToCell(idx) {
   userValues[idx] = selectedTool;
   setPeg(idx, selectedTool);
   saveActiveGame();
+  updateColorCounts();
 }
 
 function onCellClick(e) {
@@ -509,6 +559,7 @@ function onCellKeyDown(e) {
       userValues[idx] = Number(e.key);
       setPeg(idx, Number(e.key));
       saveActiveGame();
+      updateColorCounts();
     }
     return;
   } else if (e.key === '0' || e.key === 'Backspace' || e.key === 'Delete') {
@@ -517,6 +568,7 @@ function onCellKeyDown(e) {
       userValues[idx] = 0;
       setPeg(idx, 0);
       saveActiveGame();
+      updateColorCounts();
     }
     return;
   }
@@ -585,6 +637,7 @@ function toggleSolution() {
       setPeg(i, userValues[i]);
     }
   }
+  updateColorCounts();
 }
 
 function checkSolution() {
