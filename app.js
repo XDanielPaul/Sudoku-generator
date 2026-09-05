@@ -753,11 +753,23 @@ async function shareCurrentPuzzle() {
   }
 }
 
-function loadFromCode(code, savedUserValues = null) {
+function loadFromCode(code, savedUserValues = null, showStatus = true) {
   const decoded = decodePuzzleCode(code);
   if (!decoded) {
     setStatus('Invalid puzzle code. Enter exactly 9 characters.', 'error');
-    return;
+    return false;
+  }
+
+  if (savedUserValues === null) {
+    try {
+      const raw = localStorage.getItem(ACTIVE_GAME_KEY);
+      if (raw) {
+        const active = JSON.parse(raw);
+        if (active && active.code === code && Array.isArray(active.userValues) && active.userValues.length === 81) {
+          savedUserValues = active.userValues;
+        }
+      }
+    } catch (e) {}
   }
 
   currentSeed = decoded.seed;
@@ -772,7 +784,10 @@ function loadFromCode(code, savedUserValues = null) {
   renderPuzzle();
   updateHashAndUrl();
   saveActiveGame();
-  setStatus('Puzzle loaded.');
+  if (showStatus) {
+    setStatus('Puzzle loaded.');
+  }
+  return true;
 }
 
 newPuzzleBtn.addEventListener('click', newPuzzle);
@@ -800,7 +815,7 @@ renderSavedPuzzles();
 const urlParams = new URLSearchParams(window.location.search);
 const initialCode = urlParams.get('p');
 if (initialCode) {
-  loadFromCode(initialCode);
+  loadFromCode(initialCode, null, false);
 } else {
   let restored = false;
   try {
@@ -808,7 +823,7 @@ if (initialCode) {
     if (raw) {
       const data = JSON.parse(raw);
       if (data && data.code && decodePuzzleCode(data.code)) {
-        loadFromCode(data.code, data.userValues);
+        loadFromCode(data.code, data.userValues, false);
         restored = true;
       }
     }
