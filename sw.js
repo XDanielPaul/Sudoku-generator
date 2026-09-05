@@ -31,29 +31,38 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const request = event.request;
+
+  if (request.method !== 'GET') return;
+
+  // Only same-origin http(s) requests are cacheable. Browser extensions issue
+  // chrome-extension:// requests through this handler, and the Cache API
+  // rejects any scheme other than http/https.
+  const url = new URL(request.url);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
+    caches.match(request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch fresh copy in background for next time
-        fetch(event.request).then((networkResponse) => {
+        // Refresh the cached copy in the background for next time.
+        fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, networkResponse);
+            return caches.open(CACHE_NAME).then((cache) => {
+              return cache.put(request, networkResponse);
             });
           }
         }).catch(() => {});
         return cachedResponse;
       }
-      return fetch(event.request).then((networkResponse) => {
+      return fetch(request).then((networkResponse) => {
         if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
           return networkResponse;
         }
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+          return cache.put(request, responseToCache);
+        }).catch(() => {});
         return networkResponse;
       });
     })
