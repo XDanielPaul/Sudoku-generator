@@ -352,8 +352,6 @@ const COLORS = [
 const boardEl = document.getElementById('board');
 const paletteEl = document.getElementById('palette');
 const difficultyEl = document.getElementById('difficulty');
-const difficultyGroupEl = document.getElementById('difficultyGroup');
-const themeBtn = document.getElementById('themeBtn');
 const newPuzzleBtn = document.getElementById('newPuzzleBtn');
 const solutionBtn = document.getElementById('solutionBtn');
 const hashInput = document.getElementById('hashInput');
@@ -570,7 +568,7 @@ function loadFromCode(code) {
   }
 
   currentSeed = decoded.seed;
-  setDifficulty(decoded.difficulty);
+  difficultyEl.value = decoded.difficulty;
   const random = createSeededRandom(currentSeed);
   const { puzzle, solution } = generatePuzzle(decoded.difficulty, random);
   currentPuzzle = puzzle;
@@ -580,49 +578,6 @@ function loadFromCode(code) {
   updateHashAndUrl();
   setStatus('Puzzle loaded.');
 }
-
-/* ---------- Difficulty control ---------- */
-
-function setDifficulty(difficulty) {
-  difficultyEl.value = difficulty;
-  difficultyGroupEl.querySelectorAll('.seg-btn').forEach((btn) => {
-    btn.classList.toggle('is-active', btn.dataset.difficulty === difficulty);
-  });
-}
-
-difficultyGroupEl.addEventListener('click', (e) => {
-  const btn = e.target.closest('.seg-btn');
-  if (!btn) return;
-  setDifficulty(btn.dataset.difficulty);
-  newPuzzle();
-});
-
-/* ---------- Theme ---------- */
-
-const THEME_KEY = 'sudoku-theme';
-
-function applyTheme(theme, persist) {
-  document.documentElement.setAttribute('data-theme', theme);
-  themeBtn.setAttribute(
-    'aria-label',
-    theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
-  );
-  if (!persist) return;
-  try {
-    localStorage.setItem(THEME_KEY, theme);
-  } catch (e) {
-    // Storage may be unavailable (private mode), the theme still applies for this session.
-  }
-}
-
-themeBtn.addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme');
-  applyTheme(current === 'dark' ? 'light' : 'dark', true);
-});
-
-// The inline script in index.html already set the initial theme; sync the button label
-// without persisting, so an untouched preference keeps following the OS setting.
-applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light', false);
 
 newPuzzleBtn.addEventListener('click', newPuzzle);
 solutionBtn.addEventListener('click', toggleSolution);
