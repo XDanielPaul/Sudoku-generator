@@ -611,7 +611,7 @@ function applyTheme(theme, persist) {
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch (e) {
-    // Storage may be unavailable (private mode); the theme still applies for this session.
+    // Storage may be unavailable (private mode), the theme still applies for this session.
   }
 }
 
