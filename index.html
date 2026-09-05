@@ -1,43 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sudoku Generator</title>
+<meta name="color-scheme" content="light dark">
+<title>Colour Sudoku</title>
 <link rel="stylesheet" href="style.css">
+<script>
+  // Applied before first paint so the page never flashes the wrong theme.
+  (function () {
+    var stored = null;
+    try { stored = localStorage.getItem('sudoku-theme'); } catch (e) { stored = null; }
+    var theme = stored === 'light' || stored === 'dark'
+      ? stored
+      : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
 </head>
 <body>
-  <div class="app">
-    <h1>Sudoku Generator</h1>
+  <main class="app">
+    <header class="app-header">
+      <div class="title-block">
+        <h1>Colour Sudoku</h1>
+        <p class="subtitle">Nine colours, one solution.</p>
+      </div>
+      <button id="themeBtn" class="icon-btn" type="button" aria-label="Switch theme" title="Switch theme">
+        <span class="theme-icon" aria-hidden="true"></span>
+      </button>
+    </header>
 
-    <div class="controls">
-      <label for="difficulty">Difficulty:</label>
-      <select id="difficulty">
+    <section class="card controls-card">
+      <div id="difficultyGroup" class="difficulty-group" role="group" aria-label="Difficulty">
+        <button type="button" class="seg-btn" data-difficulty="easy">Easy</button>
+        <button type="button" class="seg-btn is-active" data-difficulty="medium">Medium</button>
+        <button type="button" class="seg-btn" data-difficulty="hard">Hard</button>
+      </div>
+      <select id="difficulty" class="visually-hidden" tabindex="-1" aria-hidden="true">
         <option value="easy">Easy</option>
         <option value="medium" selected>Medium</option>
         <option value="hard">Hard</option>
       </select>
-      <button id="newPuzzleBtn">New Puzzle</button>
-      <button id="solutionBtn">Show Solution</button>
+      <div class="action-group">
+        <button id="newPuzzleBtn" class="btn btn-primary" type="button">New Puzzle</button>
+        <button id="solutionBtn" class="btn btn-ghost" type="button">Show Solution</button>
+      </div>
+    </section>
+
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+
+    <div class="board-wrap">
+      <div id="board" class="board" role="grid" aria-label="Sudoku board"></div>
     </div>
 
-    <div id="status" class="status" aria-live="polite"></div>
+    <section class="card palette-card">
+      <div id="palette" class="palette" role="group" aria-label="Colour palette"></div>
+      <p class="hint">Pick a colour (or the eraser), then click a cell. Given clues are locked. With a cell focused you can also press <kbd>1</kbd>-<kbd>9</kbd> to place a colour, or <kbd>Backspace</kbd> to clear it.</p>
+    </section>
 
-    <div id="board" class="board" role="grid" aria-label="Sudoku board"></div>
-
-    <div id="palette" class="palette" role="group" aria-label="Color palette"></div>
-    <p class="hint">Pick a color (or the eraser), then click a cell to place it. Clue cells are locked. You can also focus a cell and press 1-9 to place a color directly, or Backspace to clear it.</p>
-
-    <div class="hash-panel">
-      <label for="hashInput">Puzzle code:</label>
+    <section class="card hash-panel">
+      <label for="hashInput">Puzzle code</label>
       <div class="hash-row">
         <input type="text" id="hashInput" maxlength="9" spellcheck="false" autocomplete="off" placeholder="9-character code">
-        <button id="copyBtn">Copy</button>
-        <button id="loadBtn">Load</button>
+        <button id="copyBtn" class="btn btn-soft" type="button">Copy</button>
+        <button id="loadBtn" class="btn btn-soft" type="button">Load</button>
       </div>
-      <p class="hint">This 9-character code stores the generator version, difficulty, and seed. Copy it to restore the same puzzle later, or share the generated URL.</p>
-    </div>
-  </div>
+      <p class="hint">This 9-character code stores the generator version, difficulty and seed. Copy it to restore the same puzzle later, or share the page URL.</p>
+    </section>
+  </main>
 
   <script src="app.js"></script>
 </body>
