@@ -336,14 +336,14 @@ function decodePuzzleCode(code) {
 // Index 1-9 map to the puzzle's internal digit values; index 0 is "empty".
 const COLORS = [
   null,
-  { name: 'Purple', hex: '#916fbd' },
-  { name: 'Yellow', hex: '#f5d515' },
   { name: 'Red', hex: '#e63b27' },
-  { name: 'Pink', hex: '#df5688' },
   { name: 'Orange', hex: '#f2911b' },
-  { name: 'Light blue', hex: '#66a4cb' },
+  { name: 'Yellow', hex: '#f5d515' },
   { name: 'Green / teal', hex: '#639d80' },
   { name: 'Pale mint', hex: '#b3ded2' },
+  { name: 'Light blue', hex: '#66a4cb' },
+  { name: 'Purple', hex: '#916fbd' },
+  { name: 'Pink', hex: '#df5688' },
   { name: 'Pale pink', hex: '#f7d4df' }
 ];
 
