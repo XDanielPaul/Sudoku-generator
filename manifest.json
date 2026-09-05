@@ -1,0 +1,19 @@
+{
+  "name": "Colour Sudoku",
+  "short_name": "Sudoku",
+  "description": "Generate and solve colorful 9x9 Sudoku puzzles offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f3ee",
+  "theme_color": "#8a5cf6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
